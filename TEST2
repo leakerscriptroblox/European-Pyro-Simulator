@@ -1,7 +1,5 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/raavenkkj/anti-kick/main/anti-kick.lua"))()
-getgenv().AntiKick = true -- Optional
-getgenv().Notifications = true -- Optional
+wait(3)
 local Targets = {"All"}
 
 local Players = game:GetService("Players")
