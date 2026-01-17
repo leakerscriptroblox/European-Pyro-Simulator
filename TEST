@@ -12,7 +12,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- YOUR SCRIPT TO AUTO-EXECUTE AFTER SERVER HOP
 local YOUR_SCRIPT = [[
-loadstring(game:HttpGet("https://raw.githubusercontent.com/nvkob1/rbxscripts/refs/heads/main/FlingGUI/FlingGUI.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/leakerscriptroblox/European-Pyro-Simulator/refs/heads/main/TEST2"))()
 ]]
 
 -- Function to execute your script
