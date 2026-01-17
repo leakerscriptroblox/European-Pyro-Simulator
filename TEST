@@ -140,13 +140,17 @@ print("Preferred server size: " .. PREFERRED_MIN_PLAYERS .. "+")
 print("Checking interval: " .. CHECK_INTERVAL .. " seconds")
 
 -- Execute your script on first load
-executeYourScript()
+task.spawn(function()
+    executeYourScript()
+end)
+
+-- Wait a bit for script to load
+task.wait(2)
 
 -- Initial check
 checkPlayerCount()
 
 -- Continuous monitoring
-while true do
-    wait(CHECK_INTERVAL)
+while task.wait(CHECK_INTERVAL) do
     checkPlayerCount()
 end
