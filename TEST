@@ -1,0 +1,159 @@
+-- Server Hopper Script with Auto-Execute
+-- Automatically joins servers with 10+ players and re-executes your script
+
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local PREFERRED_MIN_PLAYERS = 10
+local MINIMUM_PLAYERS = 4 -- Server hop if below this
+local CHECK_INTERVAL = 2.5 -- Check every 2.5 seconds
+local LocalPlayer = Players.LocalPlayer
+
+-- YOUR SCRIPT TO AUTO-EXECUTE AFTER SERVER HOP
+local YOUR_SCRIPT = [[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/nvkob1/rbxscripts/refs/heads/main/FlingGUI/FlingGUI.lua"))()
+]]
+
+-- Function to execute your script
+local function executeYourScript()
+    print("[Auto-Execute] Running your script...")
+    local success, err = pcall(function()
+        loadstring(YOUR_SCRIPT)()
+    end)
+    
+    if success then
+        print("[Auto-Execute] Script loaded successfully!")
+    else
+        warn("[Auto-Execute] Error loading script: " .. tostring(err))
+    end
+end
+
+-- Function to get current server list
+local function getServers()
+    local success, result = pcall(function()
+        local cursor = ""
+        local servers = {}
+        
+        repeat
+            local url = string.format(
+                "https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100&cursor=%s",
+                game.PlaceId,
+                cursor
+            )
+            
+            local response = game:HttpGet(url)
+            local data = HttpService:JSONDecode(response)
+            
+            for _, server in pairs(data.data) do
+                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    table.insert(servers, server)
+                end
+            end
+            
+            cursor = data.nextPageCursor or ""
+        until cursor == ""
+        
+        return servers
+    end)
+    
+    return success and result or {}
+end
+
+-- Function to hop to a new server
+local function serverHop()
+    print("[Server Hop] Looking for best available server...")
+    
+    local servers = getServers()
+    
+    if #servers == 0 then
+        warn("[Server Hop] No available servers found. Retrying in 10 seconds...")
+        wait(10)
+        return serverHop()
+    end
+    
+    -- Try to find servers starting from 10+ players, then 9, 8, etc.
+    local targetServer = nil
+    
+    for targetCount = PREFERRED_MIN_PLAYERS, 1, -1 do
+        for _, server in pairs(servers) do
+            if server.playing >= targetCount then
+                targetServer = server
+                print("[Server Hop] Found server with " .. targetServer.playing .. " players (target: " .. targetCount .. "+)")
+                break
+            end
+        end
+        
+        if targetServer then
+            break
+        end
+    end
+    
+    -- Fallback to any available server if none found
+    if not targetServer then
+        targetServer = servers[math.random(1, #servers)]
+        print("[Server Hop] Using fallback server with " .. targetServer.playing .. " players")
+    end
+    
+    print("[Server Hop] Teleporting to server...")
+    print("[Server Hop] Scripts will auto-execute after joining...")
+    
+    -- Queue both scripts to execute after teleport
+    local scriptToQueue = [[
+        -- Execute your FlingGUI script
+        wait(3)
+        print("[Auto-Execute] Loading FlingGUI...")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/nvkob1/rbxscripts/refs/heads/main/FlingGUI/FlingGUI.lua"))()
+        
+        -- Execute the server hopper script again
+        wait(1)
+        print("[Auto-Execute] Loading Server Hopper...")
+        loadstring(game:HttpGet("]] .. "YOUR_HOPPER_SCRIPT_URL_HERE" .. [["))()
+    ]]
+    
+    -- Use queue_on_teleport to survive the teleport
+    if syn and syn.queue_on_teleport then
+        syn.queue_on_teleport(scriptToQueue)
+    elseif queue_on_teleport then
+        queue_on_teleport(scriptToQueue)
+    else
+        warn("[Server Hop] queue_on_teleport not supported by your executor!")
+    end
+    
+    TeleportService:TeleportToPlaceInstance(
+        game.PlaceId,
+        targetServer.id,
+        LocalPlayer
+    )
+end
+
+-- Function to check player count
+local function checkPlayerCount()
+    local playerCount = #Players:GetPlayers()
+    print("[Server Monitor] Current players: " .. playerCount)
+    
+    if playerCount < MINIMUM_PLAYERS then
+        print("[Server Monitor] Player count below " .. MINIMUM_PLAYERS .. ". Initiating server hop...")
+        serverHop()
+    else
+        print("[Server Monitor] Player count acceptable. Continuing monitoring...")
+    end
+end
+
+-- Main loop
+print("=== Server Hopper Active ===")
+print("Minimum players before hop: " .. MINIMUM_PLAYERS)
+print("Preferred server size: " .. PREFERRED_MIN_PLAYERS .. "+")
+print("Checking interval: " .. CHECK_INTERVAL .. " seconds")
+
+-- Execute your script on first load
+executeYourScript()
+
+-- Initial check
+checkPlayerCount()
+
+-- Continuous monitoring
+while true do
+    wait(CHECK_INTERVAL)
+    checkPlayerCount()
+end
