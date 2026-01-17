@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 local PREFERRED_MIN_PLAYERS = 10
-local MINIMUM_PLAYERS = 4 -- Server hop if below this
+local MINIMUM_PLAYERS = 5 -- Server hop if below this
 local CHECK_INTERVAL = 2.5 -- Check every 2.5 seconds
 local LocalPlayer = Players.LocalPlayer
 
