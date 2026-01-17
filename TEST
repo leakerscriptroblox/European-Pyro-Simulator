@@ -98,17 +98,10 @@ local function serverHop()
     print("[Server Hop] Teleporting to server...")
     print("[Server Hop] Scripts will auto-execute after joining...")
     
-    -- Queue both scripts to execute after teleport
+    -- Queue scripts to execute after teleport
     local scriptToQueue = [[
-        -- Execute your FlingGUI script
-        wait(3)
-        print("[Auto-Execute] Loading FlingGUI...")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/nvkob1/rbxscripts/refs/heads/main/FlingGUI/FlingGUI.lua"))()
-        
-        -- Execute the server hopper script again
         wait(1)
-        print("[Auto-Execute] Loading Server Hopper...")
-        loadstring(game:HttpGet("]] .. "YOUR_HOPPER_SCRIPT_URL_HERE" .. [["))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/leakerscriptroblox/European-Pyro-Simulator/refs/heads/main/TEST"))()
     ]]
     
     -- Use queue_on_teleport to survive the teleport
