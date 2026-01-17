@@ -90,7 +90,15 @@ local function serverHop()
         syn.queue_on_teleport(scriptToQueue)
     elseif queue_on_teleport then
         queue_on_teleport(scriptToQueue)
+    else
+        warn("[Server Hop] queue_on_teleport not supported by your executor!")
     end
+    
+    TeleportService:TeleportToPlaceInstance(
+        game.PlaceId,
+        targetServer.id,
+        LocalPlayer
+    )
     end
     
     TeleportService:TeleportToPlaceInstance(
