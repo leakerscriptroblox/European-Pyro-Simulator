@@ -1,5 +1,5 @@
--- Server Hopper Script with Auto-Execute
--- Automatically joins servers with 10+ players and re-executes your script
+-- Server Hopper Script
+-- Automatically joins servers with 10+ players
 
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
@@ -10,24 +10,8 @@ local MINIMUM_PLAYERS = 4 -- Server hop if below this
 local CHECK_INTERVAL = 2.5 -- Check every 2.5 seconds
 local LocalPlayer = Players.LocalPlayer
 
--- YOUR SCRIPT TO AUTO-EXECUTE AFTER SERVER HOP
-local YOUR_SCRIPT = [[
+-- Execute TEST2 on first load
 loadstring(game:HttpGet("https://raw.githubusercontent.com/leakerscriptroblox/European-Pyro-Simulator/refs/heads/main/TEST2"))()
-]]
-
--- Function to execute your script
-local function executeYourScript()
-    print("[Auto-Execute] Running your script...")
-    local success, err = pcall(function()
-        loadstring(YOUR_SCRIPT)()
-    end)
-    
-    if success then
-        print("[Auto-Execute] Script loaded successfully!")
-    else
-        warn("[Auto-Execute] Error loading script: " .. tostring(err))
-    end
-end
 
 -- Function to get current server list
 local function getServers()
@@ -79,7 +63,7 @@ local function serverHop()
         for _, server in pairs(servers) do
             if server.playing >= targetCount then
                 targetServer = server
-                print("[Server Hop] Found server with " .. targetServer.playing .. " players (target: " .. targetCount .. "+)")
+                print("[Server Hop] Found server with " .. targetServer.playing .. " players")
                 break
             end
         end
@@ -92,25 +76,21 @@ local function serverHop()
     -- Fallback to any available server if none found
     if not targetServer then
         targetServer = servers[math.random(1, #servers)]
-        print("[Server Hop] Using fallback server with " .. targetServer.playing .. " players")
     end
     
-    print("[Server Hop] Teleporting to server...")
-    print("[Server Hop] Scripts will auto-execute after joining...")
+    print("[Server Hop] Teleporting...")
     
-    -- Queue scripts to execute after teleport
+    -- Queue TEST to execute after teleport
     local scriptToQueue = [[
         wait(1)
         loadstring(game:HttpGet("https://raw.githubusercontent.com/leakerscriptroblox/European-Pyro-Simulator/refs/heads/main/TEST"))()
     ]]
     
-    -- Use queue_on_teleport to survive the teleport
     if syn and syn.queue_on_teleport then
         syn.queue_on_teleport(scriptToQueue)
     elseif queue_on_teleport then
         queue_on_teleport(scriptToQueue)
-    else
-        warn("[Server Hop] queue_on_teleport not supported by your executor!")
+    end
     end
     
     TeleportService:TeleportToPlaceInstance(
@@ -126,26 +106,15 @@ local function checkPlayerCount()
     print("[Server Monitor] Current players: " .. playerCount)
     
     if playerCount < MINIMUM_PLAYERS then
-        print("[Server Monitor] Player count below " .. MINIMUM_PLAYERS .. ". Initiating server hop...")
+        print("[Server Monitor] Hopping to better server...")
         serverHop()
-    else
-        print("[Server Monitor] Player count acceptable. Continuing monitoring...")
     end
 end
 
 -- Main loop
 print("=== Server Hopper Active ===")
-print("Minimum players before hop: " .. MINIMUM_PLAYERS)
-print("Preferred server size: " .. PREFERRED_MIN_PLAYERS .. "+")
-print("Checking interval: " .. CHECK_INTERVAL .. " seconds")
-
--- Execute your script on first load
-executeYourScript()
-
--- Initial check
 checkPlayerCount()
 
--- Continuous monitoring
 while true do
     wait(CHECK_INTERVAL)
     checkPlayerCount()
