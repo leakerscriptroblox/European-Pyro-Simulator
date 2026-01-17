@@ -68,15 +68,24 @@ while true do
         local SFBasePart = function(BasePart)
             local Time = tick()
             local Angle = 0
+            local PredictionTime = 0.15 -- Adjust this for better prediction (0.1-0.3 works best)
 
             repeat
-                if not (RootPart and THumanoid) then break end
+                if not (RootPart and THumanoid and BasePart) then break end
                 Angle += 100
-                local move = THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25
+                
+                -- FIXED: Better movement prediction using velocity + position
+                local targetVelocity = BasePart.Velocity
+                local predictedOffset = targetVelocity * PredictionTime
+                
+                -- Alternative method using MoveDirection (more stable for walking)
+                if THumanoid.MoveDirection.Magnitude > 0.1 then
+                    predictedOffset = THumanoid.MoveDirection * THumanoid.WalkSpeed * PredictionTime
+                end
 
-                FPos(BasePart, CFrame.new(0, 1.5, 0) + move, CFrame.Angles(math.rad(Angle), 0, 0))
+                FPos(BasePart, CFrame.new(predictedOffset.X, 1.5, predictedOffset.Z), CFrame.Angles(math.rad(Angle), 0, 0))
                 task.wait()
-                FPos(BasePart, CFrame.new(0, -1.5, 0) + move, CFrame.Angles(math.rad(Angle), 0, 0))
+                FPos(BasePart, CFrame.new(predictedOffset.X, -1.5, predictedOffset.Z), CFrame.Angles(math.rad(Angle), 0, 0))
                 task.wait()
             until BasePart.Velocity.Magnitude > 500
                 or BasePart.Parent ~= TCharacter
