@@ -1,4 +1,6 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCore("DevConsoleVisible", true)
 wait(3)
 local Targets = {"All"}
 
