@@ -68,7 +68,7 @@ while true do
         local SFBasePart = function(BasePart)
             local Time = tick()
             local Angle = 0
-            local PredictionTime = 0.15 -- Adjust this for better prediction (0.1-0.3 works best)
+            local PredictionTime = 0.05 -- Adjust this for better prediction (0.1-0.3 works best)
 
             repeat
                 if not (RootPart and THumanoid and BasePart) then break end
