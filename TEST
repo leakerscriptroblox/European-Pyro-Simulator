@@ -72,10 +72,10 @@ local function serverHop()
         return serverHop()
     end
     
-    -- Try to find servers starting from 10+ players, then 9, 8, etc.
+    -- Try to find servers starting from 10+ players, then 9, 8, etc. down to 5
     local targetServer = nil
     
-    for targetCount = PREFERRED_MIN_PLAYERS, 1, -1 do
+    for targetCount = PREFERRED_MIN_PLAYERS, MINIMUM_PLAYERS, -1 do
         for _, server in pairs(servers) do
             if server.playing >= targetCount then
                 targetServer = server
@@ -89,13 +89,37 @@ local function serverHop()
         end
     end
     
-    -- Fallback to any available server if none found
+    -- If no server with 5+ players found, find the one with most players
     if not targetServer then
-        targetServer = servers[math.random(1, #servers)]
-        print("[Server Hop] Using fallback server with " .. targetServer.playing .. " players")
+        print("[Server Hop] No servers with " .. MINIMUM_PLAYERS .. "+ players found. Finding highest population server...")
+        local highestPopulation = 0
+        
+        for _, server in pairs(servers) do
+            if server.playing > highestPopulation then
+                highestPopulation = server.playing
+                targetServer = server
+            end
+        end
+        
+        if targetServer then
+            print("[Server Hop] Best available server has " .. targetServer.playing .. " players")
+        end
     end
     
-    print("[Server Hop] Teleporting to server...")
+    -- Fallback to any available server if somehow none found
+    if not targetServer then
+        targetServer = servers[math.random(1, #servers)]
+        print("[Server Hop] Using random fallback server")
+    end
+    
+    -- Check if target server is our current server
+    local currentPlayerCount = #Players:GetPlayers()
+    if targetServer.playing <= currentPlayerCount then
+        print("[Server Hop] Best server has " .. targetServer.playing .. " players, we have " .. currentPlayerCount .. ". Staying in current server.")
+        return
+    end
+    
+    print("[Server Hop] Teleporting to server with " .. targetServer.playing .. " players...")
     print("[Server Hop] Scripts will auto-execute after joining...")
     
     -- Queue scripts to execute after teleport
